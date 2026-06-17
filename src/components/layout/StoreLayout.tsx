@@ -34,7 +34,7 @@ export const StoreLayout: React.FC<StoreLayoutProps> = ({ children }) => {
   const currentUser = useAuthStore(state => state.currentUser);
   const logout = useAuthStore(state => state.logout);
   const unreadCount = useNotificationStore(state => 
-    currentUser ? state.getUnreadCount(currentUser.id) : 0
+    currentUser ? state.getUnreadCount(currentUser.id, currentUser.role, currentUser.province) : 0
   );
 
   const handleLogout = () => {

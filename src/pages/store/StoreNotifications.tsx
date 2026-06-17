@@ -22,7 +22,11 @@ export const StoreNotifications: React.FC = () => {
   const [readFilter, setReadFilter] = useState<'all' | 'unread' | 'read'>('all');
 
   const myNotifications = currentUser 
-    ? useNotificationStore.getState().getNotificationsForUser(currentUser.id, currentUser.role)
+    ? useNotificationStore.getState().getNotificationsForUser(
+        currentUser.id, 
+        currentUser.role,
+        currentUser.province
+      )
     : [];
 
   const filteredNotifications = myNotifications.filter(n => {

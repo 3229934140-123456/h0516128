@@ -9,6 +9,8 @@ export interface User {
   phone: string;
   email?: string;
   avatar?: string;
+  province?: string;
+  city?: string;
   createdAt: string;
 }
 

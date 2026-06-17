@@ -39,6 +39,8 @@ export const mockUsers: User[] = [
     name: '陈老板',
     phone: '13900139001',
     email: 'chen@email.com',
+    province: '广东',
+    city: '广州',
     createdAt: '2024-03-01T00:00:00Z'
   },
   {
@@ -49,6 +51,8 @@ export const mockUsers: User[] = [
     name: '刘女士',
     phone: '13900139002',
     email: 'liu@email.com',
+    province: '浙江',
+    city: '杭州',
     createdAt: '2024-03-15T00:00:00Z'
   }
 ];

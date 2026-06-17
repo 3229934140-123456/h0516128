@@ -16,8 +16,8 @@ export const useDataStore = create<DataState>(() => ({
     const thisYear = now.getFullYear();
     
     const signedThisMonth = applications.filter(a => {
-      if (a.currentStage !== 'completed' && a.currentStage !== 'preparation') return false;
-      const d = new Date(a.createdAt);
+      if (a.currentStage !== 'preparation' && a.currentStage !== 'completed') return false;
+      const d = new Date(a.lastProgressAt || a.updatedAt);
       return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
     }).length;
     
@@ -61,8 +61,11 @@ export const useDataStore = create<DataState>(() => ({
         return ad.getMonth() === d.getMonth() && ad.getFullYear() === d.getFullYear();
       });
       const monthSignings = monthApps.filter(a => 
-        a.currentStage === 'completed' || a.currentStage === 'preparation'
-      ).length;
+        a.currentStage === 'preparation' || a.currentStage === 'completed'
+      ).filter(a => {
+        const sd = new Date(a.lastProgressAt || a.updatedAt);
+        return sd.getMonth() === d.getMonth() && sd.getFullYear() === d.getFullYear();
+      }).length;
       monthlyTrend.push({
         month: monthStr,
         applications: monthApps.length,

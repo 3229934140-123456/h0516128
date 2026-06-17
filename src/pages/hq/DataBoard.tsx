@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { BarChart3, TrendingUp, MapPin, Users, Clock, AlertTriangle } from 'lucide-react';
+import { BarChart3, TrendingUp, MapPin, Users, Clock, AlertTriangle, CheckCircle, DollarSign } from 'lucide-react';
 import { 
   BarChart, 
   Bar, 
@@ -79,11 +79,16 @@ export const DataBoard: React.FC = () => {
 
     applications.forEach(app => {
       const appDate = new Date(app.createdAt);
-      const key = `${appDate.getFullYear()}-${String(appDate.getMonth() + 1).padStart(2, '0')}`;
-      if (months[key]) {
-        months[key].applications++;
-        if (app.currentStage === 'completed') {
-          months[key].signings++;
+      const appMonthKey = `${appDate.getFullYear()}-${String(appDate.getMonth() + 1).padStart(2, '0')}`;
+      if (months[appMonthKey]) {
+        months[appMonthKey].applications++;
+      }
+      
+      if (app.currentStage === 'preparation' || app.currentStage === 'completed') {
+        const signDate = new Date(app.lastProgressAt || app.updatedAt);
+        const signMonthKey = `${signDate.getFullYear()}-${String(signDate.getMonth() + 1).padStart(2, '0')}`;
+        if (months[signMonthKey]) {
+          months[signMonthKey].signings++;
         }
       }
     });
@@ -122,15 +127,29 @@ export const DataBoard: React.FC = () => {
 
   const keyMetrics = useMemo(() => {
     const total = applications.length;
-    const completed = applications.filter(a => a.currentStage === 'completed').length;
+    const signed = applications.filter(a => 
+      a.currentStage === 'contract' || 
+      a.currentStage === 'preparation' || 
+      a.currentStage === 'completed'
+    ).length;
+    
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    const signedThisMonth = applications.filter(a => {
+      if (a.currentStage !== 'preparation' && a.currentStage !== 'completed') return false;
+      const d = new Date(a.lastProgressAt || a.updatedAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    }).length;
+    
     const totalInvestment = applications.reduce((sum, a) => sum + a.investmentAmount, 0);
     const avgInvestment = total > 0 ? totalInvestment / total : 0;
     
     return [
       { label: '总申请数', value: total, icon: Users, color: 'blue' },
-      { label: '已签约数', value: completed, icon: TrendingUp, color: 'green' },
-      { label: '总转化率', value: formatPercent(total > 0 ? completed / total : 0), icon: BarChart3, color: 'purple' },
-      { label: '平均投资额', value: formatWan(avgInvestment), icon: TrendingUp, color: 'orange' },
+      { label: '本月新增签约', value: signedThisMonth, icon: TrendingUp, color: 'green' },
+      { label: '累计签约数', value: signed, icon: CheckCircle, color: 'purple' },
+      { label: '平均投资额', value: formatWan(avgInvestment), icon: DollarSign, color: 'orange' },
     ];
   }, [applications]);
 

@@ -73,7 +73,8 @@ export const ApplicationDetail: React.FC = () => {
     if (id) {
       const success = advanceStage(id, note);
       if (success && application.currentStage === 'review') {
-        createAgreement(id, application.applicantName, application.city, application.investmentAmount);
+        const newAgreement = createAgreement(id, application.applicantName, application.city, application.investmentAmount);
+        navigate(`/hq/agreements/${newAgreement.id}`);
       }
     }
   };
@@ -104,15 +105,17 @@ export const ApplicationDetail: React.FC = () => {
   };
 
   const handleCreateAgreement = () => {
-    if (!existingAgreement) {
-      createAgreement(
+    if (existingAgreement) {
+      navigate(`/hq/agreements/${existingAgreement.id}`);
+    } else {
+      const newAgreement = createAgreement(
         application.id,
         application.applicantName,
         application.city,
         application.investmentAmount
       );
+      navigate(`/hq/agreements/${newAgreement.id}`);
     }
-    navigate(`/hq/agreements/${existingAgreement?.id || 'new'}`);
   };
 
   const isTerminalStage = application.currentStage === 'completed' || application.currentStage === 'rejected';

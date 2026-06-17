@@ -70,7 +70,7 @@ export const PortalHome: React.FC = () => {
 
             <div className="hidden md:flex items-center gap-4">
               <Link 
-                to="/apply"
+                to="/portal/apply"
                 className="px-5 py-2.5 bg-gradient-to-r from-orange-400 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-500 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-orange-500/25"
               >
                 立即申请
@@ -103,7 +103,7 @@ export const PortalHome: React.FC = () => {
               <a href="#contact" className="text-gray-600 font-medium py-2">联系我们</a>
               <div className="pt-4 flex flex-col gap-3">
                 <Link 
-                  to="/apply"
+                  to="/portal/apply"
                   className="w-full px-5 py-2.5 bg-gradient-to-r from-orange-400 to-orange-600 text-white font-semibold rounded-xl text-center"
                 >
                   立即申请
@@ -144,7 +144,7 @@ export const PortalHome: React.FC = () => {
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link 
-                  to="/apply"
+                  to="/portal/apply"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-400 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-500 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-xl shadow-orange-500/30"
                 >
                   立即申请加盟

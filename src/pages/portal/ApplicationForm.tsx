@@ -147,7 +147,7 @@ export const ApplicationForm: React.FC = () => {
         storeArea: formData.storeArea
       });
       
-      navigate('/apply/success');
+      navigate('/portal/success');
     } catch (error) {
       console.error('Submit error:', error);
     } finally {

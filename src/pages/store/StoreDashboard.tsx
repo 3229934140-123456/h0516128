@@ -26,10 +26,10 @@ export const StoreDashboard: React.FC = () => {
   const currentUser = useAuthStore(state => state.currentUser);
   const agreements = useAgreementStore(state => state.agreements);
   const notifications = useNotificationStore(state => 
-    currentUser ? state.getNotificationsForUser(currentUser.id, currentUser.role) : []
+    currentUser ? state.getNotificationsForUser(currentUser.id, currentUser.role, currentUser.province) : []
   );
   const unreadCount = useNotificationStore(state => 
-    currentUser ? state.getUnreadCount(currentUser.id) : 0
+    currentUser ? state.getUnreadCount(currentUser.id, currentUser.role, currentUser.province) : 0
   );
   const resources = useResourceStore(state => state.resources);
   const applications = useApplicationStore(state => 
