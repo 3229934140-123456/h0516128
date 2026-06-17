@@ -109,9 +109,16 @@ export const useAgreementStore = create<AgreementState>((set, get) => ({
     
     let newStatus = agreement.status;
     if (signer === 'hq') {
-      newStatus = 'signed_hq';
+      if (agreement.status === 'pending' || agreement.status === 'draft') {
+        newStatus = 'signed_hq';
+      }
     } else if (signer === 'franchisee') {
-      newStatus = agreement.status === 'signed_hq' ? 'signed_both' : 'signed_hq';
+      if (agreement.status === 'signed_hq') {
+        newStatus = 'signed_both';
+      } else if (agreement.status === 'pending') {
+        newStatus = 'pending';
+        return false;
+      }
     }
     
     const updated = get().agreements.map(a =>

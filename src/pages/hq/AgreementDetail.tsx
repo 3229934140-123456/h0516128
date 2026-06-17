@@ -73,6 +73,8 @@ export const AgreementDetail: React.FC = () => {
   const handleSign = (signatureData: string) => {
     if (!currentUser || !agreement) return;
     
+    const willBeBothSigned = signerType === 'franchisee' && agreement.status === 'signed_hq';
+    
     const success = signAgreement(
       agreement.id,
       signerType,
@@ -80,7 +82,7 @@ export const AgreementDetail: React.FC = () => {
       signatureData
     );
     
-    if (success && signerType === 'franchisee' && agreement.status === 'signed_hq') {
+    if (success && willBeBothSigned) {
       if (application) {
         advanceStage(application.id, '加盟协议已签署，进入开店筹备阶段');
       }

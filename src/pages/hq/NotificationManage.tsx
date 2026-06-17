@@ -26,11 +26,15 @@ const provinces = [
 export const NotificationManage: React.FC = () => {
   const { notifications, createNotification, deleteNotification, markAsRead } = useNotificationStore();
   const currentUser = useAuthStore(state => state.currentUser);
+  const users = useAuthStore(state => state.users);
   
   const [searchKeyword, setSearchKeyword] = useState('');
   const [typeFilter, setTypeFilter] = useState<NotificationType | 'all'>('all');
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  
+  const franchiseeUsers = users.filter(u => u.role === 'franchisee');
+  const allUsersCount = franchiseeUsers.length;
   
   const [formData, setFormData] = useState({
     title: '',
@@ -42,6 +46,18 @@ export const NotificationManage: React.FC = () => {
   });
   
   const [regionDropdownOpen, setRegionDropdownOpen] = useState(false);
+  const [franchiseeSearchKeyword, setFranchiseeSearchKeyword] = useState('');
+
+  const getActualTotalCount = (targetType: NotificationTargetType, targetRegions?: string[], targetUserIds?: string[]) => {
+    if (targetType === 'all') return franchiseeUsers.length;
+    if (targetType === 'region') {
+      return franchiseeUsers.filter(u => u.province && targetRegions?.includes(u.province)).length;
+    }
+    if (targetType === 'specified') {
+      return targetUserIds?.length || 0;
+    }
+    return 0;
+  };
 
   const filteredNotifications = notifications.filter(n => {
     const matchesSearch = n.title.toLowerCase().includes(searchKeyword.toLowerCase()) ||
@@ -52,6 +68,12 @@ export const NotificationManage: React.FC = () => {
 
   const handleSubmit = () => {
     if (!formData.title.trim() || !formData.content.trim() || !currentUser) return;
+    
+    const actualTotalCount = getActualTotalCount(
+      formData.targetType,
+      formData.targetRegions,
+      formData.targetUserIds
+    );
 
     if (editId) {
       // Update logic would go here
@@ -91,6 +113,38 @@ export const NotificationManage: React.FC = () => {
         ? prev.targetRegions.filter(r => r !== province)
         : [...prev.targetRegions, province],
     }));
+  };
+
+  const toggleFranchisee = (userId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      targetUserIds: prev.targetUserIds.includes(userId)
+        ? prev.targetUserIds.filter(id => id !== userId)
+        : [...prev.targetUserIds, userId],
+    }));
+  };
+
+  const toggleAllFranchisees = () => {
+    const filteredUsers = franchiseeUsers.filter(u => 
+      u.name.toLowerCase().includes(franchiseeSearchKeyword.toLowerCase()) ||
+      u.username.toLowerCase().includes(franchiseeSearchKeyword.toLowerCase())
+    );
+    const allSelected = filteredUsers.every(u => formData.targetUserIds.includes(u.id));
+    
+    if (allSelected) {
+      setFormData(prev => ({
+        ...prev,
+        targetUserIds: prev.targetUserIds.filter(
+          id => !filteredUsers.find(u => u.id === id)
+        ),
+      }));
+    } else {
+      const newIds = [...formData.targetUserIds];
+      filteredUsers.forEach(u => {
+        if (!newIds.includes(u.id)) newIds.push(u.id);
+      });
+      setFormData(prev => ({ ...prev, targetUserIds: newIds }));
+    }
   };
 
   const getTypeColor = (type: NotificationType) => {
@@ -329,7 +383,7 @@ export const NotificationManage: React.FC = () => {
                       <span className={formData.targetRegions.length === 0 ? 'text-gray-400' : 'text-gray-800'}>
                         {formData.targetRegions.length === 0
                           ? '请选择目标区域'
-                          : `已选择 ${formData.targetRegions.length} 个省份`}
+                          : `已选择 ${formData.targetRegions.length} 个省份（共 ${getActualTotalCount(formData.targetType, formData.targetRegions)} 位加盟商）`}
                       </span>
                       <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${regionDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
@@ -352,6 +406,99 @@ export const NotificationManage: React.FC = () => {
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {formData.targetType === 'specified' && (
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <div className="p-3 border-b border-gray-100 bg-gray-50">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="relative flex-1">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            type="text"
+                            placeholder="搜索门店名称或账号..."
+                            value={franchiseeSearchKeyword}
+                            onChange={(e) => setFranchiseeSearchKeyword(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                          />
+                        </div>
+                        <button
+                          onClick={toggleAllFranchisees}
+                          className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors whitespace-nowrap"
+                        >
+                          {franchiseeUsers.filter(u =>
+                            u.name.toLowerCase().includes(franchiseeSearchKeyword.toLowerCase()) ||
+                            u.username.toLowerCase().includes(franchiseeSearchKeyword.toLowerCase())
+                          ).every(u => formData.targetUserIds.includes(u.id))
+                            ? '取消全选'
+                            : '全选'
+                          }
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        已选择 <span className="font-medium text-blue-600">{formData.targetUserIds.length}</span> 位加盟商
+                        {formData.targetUserIds.length > 0 && (
+                          <span>，共 <span className="font-medium text-blue-600">{formData.targetUserIds.length}</span> 人接收</span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto">
+                      {franchiseeUsers.filter(u =>
+                        u.name.toLowerCase().includes(franchiseeSearchKeyword.toLowerCase()) ||
+                        u.username.toLowerCase().includes(franchiseeSearchKeyword.toLowerCase())
+                      ).length === 0 ? (
+                        <div className="p-8 text-center text-gray-400 text-sm">
+                          暂无匹配的加盟商
+                        </div>
+                      ) : (
+                        franchiseeUsers.filter(u =>
+                          u.name.toLowerCase().includes(franchiseeSearchKeyword.toLowerCase()) ||
+                          u.username.toLowerCase().includes(franchiseeSearchKeyword.toLowerCase())
+                        ).map(user => {
+                          const isSelected = formData.targetUserIds.includes(user.id);
+                          return (
+                            <div
+                              key={user.id}
+                              onClick={() => toggleFranchisee(user.id)}
+                              className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors border-b border-gray-50 last:border-b-0 ${
+                                isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
+                                isSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                              }`}>
+                                {isSelected && (
+                                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                                {user.name.charAt(0)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-gray-800">{user.name}</span>
+                                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                                    @{user.username}
+                                  </span>
+                                </div>
+                                <div className="text-sm text-gray-500 mt-0.5 flex items-center gap-2">
+                                  {user.province && <span>{user.province} · {user.city || ''}</span>}
+                                  {user.phone && <span>{user.phone}</span>}
+                                </div>
+                              </div>
+                              {isSelected && (
+                                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                                  已选择
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

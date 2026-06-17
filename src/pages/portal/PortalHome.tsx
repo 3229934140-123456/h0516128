@@ -318,7 +318,7 @@ export const PortalHome: React.FC = () => {
             现在提交申请，专业招商顾问将在24小时内与您联系
           </p>
           <Link 
-            to="/apply"
+            to="/portal/apply"
             className="inline-flex items-center gap-2 px-10 py-4 bg-white text-orange-600 font-bold rounded-xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-xl"
           >
             立即提交加盟申请
